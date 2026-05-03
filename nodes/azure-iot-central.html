@@ -1,0 +1,273 @@
+<!-- ─────────────────────────────────────────────────────────────────────────
+     CONFIG NODE
+     ──────────────────────────────────────────────────────────────────────── -->
+<script type="text/javascript">
+    RED.nodes.registerType('azure-iot-central-config', {
+        category:    'config',
+        defaults: {
+            name:        { value: '' },
+            scopeid:     { value: '', required: true },
+            deviceid:    { value: '', required: true },
+            transport:   { value: 'mqtt' },
+            auth:        { value: 'sas' },
+            certfile:    { value: '' },
+            certkeyfile: { value: '' }
+        },
+        credentials: {
+            primarykey: { type: 'password' },
+            passphrase:  { type: 'password' }
+        },
+        label: function () {
+            return this.name || this.deviceid || 'IoT Central Config';
+        },
+        oneditprepare: function () {
+            function toggleAuth() {
+                if ($('#node-config-input-auth').val() === 'x509') {
+                    $('.iotc-x509').show();
+                    $('.iotc-sas').hide();
+                } else {
+                    $('.iotc-x509').hide();
+                    $('.iotc-sas').show();
+                }
+            }
+            toggleAuth();
+            $('#node-config-input-auth').on('change', toggleAuth);
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="azure-iot-central-config">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="My IoT Device">
+    </div>
+
+    <hr>
+
+    <div class="form-row">
+        <label for="node-config-input-scopeid"><i class="fa fa-globe"></i> Scope ID</label>
+        <input type="text" id="node-config-input-scopeid" placeholder="0ne00000000">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-deviceid"><i class="fa fa-microchip"></i> Device ID</label>
+        <input type="text" id="node-config-input-deviceid" placeholder="my-device-01">
+    </div>
+
+    <hr>
+
+    <div class="form-row">
+        <label for="node-config-input-transport"><i class="fa fa-exchange"></i> Transport</label>
+        <select id="node-config-input-transport" style="width:70%">
+            <option value="mqtt">MQTT (recommended)</option>
+            <option value="amqp">AMQP</option>
+            <option value="http">HTTP (telemetry only)</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-auth"><i class="fa fa-lock"></i> Auth</label>
+        <select id="node-config-input-auth" style="width:70%">
+            <option value="sas">SAS Key</option>
+            <option value="x509">X.509 Certificate</option>
+        </select>
+    </div>
+
+    <!-- SAS -->
+    <div class="form-row iotc-sas">
+        <label for="node-config-input-primarykey"><i class="fa fa-key"></i> Primary Key</label>
+        <input type="password" id="node-config-input-primarykey" placeholder="Base64-encoded SAS primary key" style="width:70%">
+    </div>
+
+    <!-- X.509 -->
+    <div class="form-row iotc-x509" style="display:none">
+        <label for="node-config-input-certfile"><i class="fa fa-file"></i> Cert File</label>
+        <input type="text" id="node-config-input-certfile" placeholder="/path/to/device-cert.pem" style="width:70%">
+    </div>
+    <div class="form-row iotc-x509" style="display:none">
+        <label for="node-config-input-certkeyfile"><i class="fa fa-file-text"></i> Key File</label>
+        <input type="text" id="node-config-input-certkeyfile" placeholder="/path/to/device-key.pem" style="width:70%">
+    </div>
+    <div class="form-row iotc-x509" style="display:none">
+        <label for="node-config-input-passphrase"><i class="fa fa-key"></i> Passphrase</label>
+        <input type="password" id="node-config-input-passphrase" placeholder="Key passphrase (optional)" style="width:70%">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="azure-iot-central-config">
+    <p>Azure IoT Central device credentials. Select this in the <b>IoT Central Device</b> node.</p>
+    <dl class="message-properties">
+        <dt>Scope ID</dt><dd>DPS ID Scope from IoT Central → Administration → Device connection</dd>
+        <dt>Device ID</dt><dd>Must match the device registered in IoT Central</dd>
+        <dt>Transport</dt><dd>MQTT/AMQP support all features. HTTP supports telemetry only.</dd>
+    </dl>
+</script>
+
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     DEVICE NODE
+     ──────────────────────────────────────────────────────────────────────── -->
+<script type="text/javascript">
+    RED.nodes.registerType('azure-iot-central-device', {
+        category:     'Azure IoT',
+        color:        '#0072C6',
+        defaults: {
+            name:     { value: '' },
+            server:   { value: '', type: 'azure-iot-central-config', required: true },
+            commands: { value: '' }
+        },
+        inputs:  1,
+        outputs: 3,
+        icon:    'font-awesome/fa-cloud',
+        label: function () {
+            return this.name || 'Azure IoT Central';
+        },
+        paletteLabel:  'IoT Central',
+        inputLabels:   ['telemetry / reported properties'],
+        outputLabels:  ['commands (cloud→device)', 'desired properties', 'status'],
+
+        oneditprepare: function () {
+            var self = this;
+
+            $('#node-input-commands-list').editableList({
+                addItem: function (container, i, item) {
+                    $('<input/>', {
+                        type:        'text',
+                        placeholder: 'commandName  (e.g. reboot)',
+                        style:       'width: 100%',
+                        value:       item.name || ''
+                    }).appendTo(container);
+                },
+                removable: true,
+                sortable:  true
+            });
+
+            // Populate from saved value
+            (self.commands || '')
+                .split('\n')
+                .map(function (s) { return s.trim(); })
+                .filter(Boolean)
+                .forEach(function (name) {
+                    $('#node-input-commands-list').editableList('addItem', { name: name });
+                });
+        },
+
+        oneditsave: function () {
+            var commands = [];
+            $('#node-input-commands-list').editableList('items').each(function () {
+                var val = $(this).find('input').val().trim();
+                if (val) commands.push(val);
+            });
+            this.commands = commands.join('\n');
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="azure-iot-central-device">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="IoT Central Device">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-server"><i class="fa fa-cloud"></i> Config</label>
+        <input type="text" id="node-input-server">
+    </div>
+
+    <div class="form-row">
+        <label style="vertical-align:top; margin-top:6px">
+            <i class="fa fa-terminal"></i> Commands
+        </label>
+        <div style="display:inline-block; width:70%; vertical-align:top">
+            <ol id="node-input-commands-list"></ol>
+        </div>
+    </div>
+
+    <div class="form-tips" style="margin-top:8px">
+        <b>Input</b> &mdash;
+        <code>msg.topic = "telemetry"</code> sends payload as telemetry.<br>
+        <code>msg.topic = "reported"</code> updates device twin reported properties.<br><br>
+        <b>Output 1</b> &mdash; Cloud command received.
+        Call <code>msg._respond(200, payload)</code> to acknowledge.<br>
+        <b>Output 2</b> &mdash; Desired property delta. Acknowledgment sent automatically.<br>
+        <b>Output 3</b> &mdash; Status events: <code>connected</code>, <code>telemetry_sent</code>,
+        <code>reported_sent</code>, <code>error</code>.
+    </div>
+</script>
+
+<script type="text/html" data-help-name="azure-iot-central-device">
+    <p>
+        Connects to <b>Azure IoT Central</b> via DPS auto-provisioning and maintains a persistent
+        device connection with automatic exponential-backoff reconnection (2 s → 60 s).
+    </p>
+
+    <h3>Input</h3>
+    <dl class="message-properties">
+        <dt>topic <span class="property-type">string</span></dt>
+        <dd>
+            <code>telemetry</code> (default) — sends <code>msg.payload</code> as JSON telemetry.<br>
+            <code>reported</code> — updates device twin reported properties with <code>msg.payload</code>.
+        </dd>
+        <dt>payload <span class="property-type">object | string</span></dt>
+        <dd>Telemetry data or reported-properties object.</dd>
+        <dt>componentName <span class="property-type">string</span></dt>
+        <dd>Optional IoT Central component name added as <code>$.sub</code> property on telemetry messages.</dd>
+        <dt>messageId <span class="property-type">string</span></dt>
+        <dd>Optional message ID forwarded to the IoT Hub message envelope.</dd>
+    </dl>
+
+    <h3>Output 1 — Cloud Commands</h3>
+    <dl class="message-properties">
+        <dt>topic <span class="property-type">string</span></dt>
+        <dd>Command name (e.g. <code>reboot</code>).</dd>
+        <dt>payload <span class="property-type">object</span></dt>
+        <dd>Command parameters sent from IoT Central.</dd>
+        <dt>methodName <span class="property-type">string</span></dt>
+        <dd>Same as <code>topic</code>.</dd>
+        <dt>requestId <span class="property-type">string</span></dt>
+        <dd>IoT Hub request correlation ID.</dd>
+        <dt>_respond <span class="property-type">function(statusCode, payload, cb?)</span></dt>
+        <dd>
+            Call this in a function node to acknowledge the command.<br>
+            Example: <code>msg._respond(200, { result: 'ok' });</code><br>
+            Must be called within 30 seconds or an automatic 200 is sent.
+        </dd>
+    </dl>
+
+    <h3>Output 2 — Desired Properties</h3>
+    <dl class="message-properties">
+        <dt>topic <span class="property-type">string</span></dt>
+        <dd>Always <code>desired</code>.</dd>
+        <dt>payload <span class="property-type">object</span></dt>
+        <dd>Object containing only the changed desired properties.</dd>
+        <dt>version <span class="property-type">number</span></dt>
+        <dd>Twin document version. Acknowledgment is sent back to IoT Central automatically.</dd>
+    </dl>
+
+    <h3>Output 3 — Status</h3>
+    <dl class="message-properties">
+        <dt>topic <span class="property-type">string</span></dt>
+        <dd>
+            <code>connected</code> — payload: <code>{ hub, deviceId }</code><br>
+            <code>telemetry_sent</code> — payload: <code>{ payload }</code><br>
+            <code>reported_sent</code> — payload: <code>{ payload }</code><br>
+            <code>error</code> — payload: <code>{ operation, error }</code>
+        </dd>
+    </dl>
+
+    <h3>Notes</h3>
+    <ul>
+        <li>Connects automatically on deploy — no inject node required.</li>
+        <li>HTTP transport supports telemetry only; commands and device twin require MQTT or AMQP.</li>
+        <li>Each node instance maintains its own connection — multiple instances are independent.</li>
+        <li>Desired property acknowledgments (version-stamped) are sent automatically.</li>
+    </ul>
+
+    <h3>Command handler example (function node wired to output 1)</h3>
+    <pre>
+// Wire Output 1 → function node
+if (msg.methodName === 'reboot') {
+    // do work…
+    msg._respond(200, { status: 'rebooting' });
+}
+return null; // don't forward the command further
+    </pre>
+</script>
