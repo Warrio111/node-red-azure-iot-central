@@ -6,16 +6,24 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "azure-iot-device":                   "^1.18.4",
-    "azure-iot-device-mqtt":              "^1.16.4",
-    "azure-iot-device-amqp":              "^1.14.4",
-    "azure-iot-device-http":              "^1.14.4",
-    "azure-iot-provisioning-device":      "^1.9.2",
-    "azure-iot-provisioning-device-mqtt": "^1.9.2",
-    "azure-iot-security-symmetric-key":   "^1.9.2",
-    "azure-iot-security-x509":            "^1.9.2"
+    "azure-iot-device": "^1.18.4",
+    "azure-iot-device-amqp": "^1.14.4",
+    "azure-iot-device-http": "^1.14.4",
+    "azure-iot-device-mqtt": "^1.16.4",
+    "azure-iot-provisioning-device": "^1.9.1",
+    "azure-iot-provisioning-device-mqtt": "^1.8.1",
+    "azure-iot-security-symmetric-key": "^1.8.3",
+    "azure-iot-security-x509": "^1.8.3"
   },
-  "keywords": ["node-red", "azure", "iot", "iot-central", "mqtt", "dps", "provisioning"],
+  "keywords": [
+    "node-red",
+    "azure",
+    "iot",
+    "iot-central",
+    "mqtt",
+    "dps",
+    "provisioning"
+  ],
   "license": "MIT",
   "node-red": {
     "version": ">=3.0.0",
