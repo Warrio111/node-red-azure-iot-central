@@ -1,4 +1,4 @@
-# node-red-contrib-azure-iot-central
+# node-red-azure-iot-central
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -22,12 +22,12 @@ A [Node-RED](https://nodered.org) node for connecting devices to **[Azure IoT Ce
 
 ## Install
 
-From the Node-RED UI: **Manage palette → Install** and search for `node-red-contrib-azure-iot-central`.
+From the Node-RED UI: **Manage palette → Install** and search for `node-red-azure-iot-central`.
 
 Or from the user data directory (`~/.node-red`):
 
 ```bash
-npm install node-red-contrib-azure-iot-central
+npm install node-red-azure-iot-central
 ```
 
 Requires **Node.js ≥ 18** and **Node-RED ≥ 3.0**.
