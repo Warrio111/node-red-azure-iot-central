@@ -1,10 +1,42 @@
 {
   "name": "node-red-contrib-azure-iot-central",
-  "version": "2.0.0",
+  "version": "0.0.1",
   "description": "Node-RED node for Azure IoT Central — telemetry, commands, and device twin via MQTT/AMQP/HTTP using the official Azure IoT SDK",
+  "author": {
+    "name": "Robert Benavides",
+    "email": "robertbenavidesgomez@gmail.com",
+    "url": "https://github.com/Warrio111"
+  },
+  "contributors": [
+    {
+      "name": "Jorge Ortega",
+      "email": "jortega@nechigroup.com"
+    },
+    {
+      "name":"William Cepeda",
+      "email": "wcepeda@nechigroup.com"    
+    },
+    {
+      "name": "Robert Benavides",
+      "email": "rbenavides@nechigroup.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Warrio111/node-red-azure-iot-central.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Warrio111/node-red-azure-iot-central/issues"
+  },
+  "homepage": "https://github.com/Warrio111/node-red-azure-iot-central#readme",
   "engines": {
     "node": ">=18.0.0"
   },
+  "files": [
+    "nodes/",
+    "LICENSE",
+    "README.md"
+  ],
   "dependencies": {
     "azure-iot-device": "^1.18.4",
     "azure-iot-device-amqp": "^1.14.4",
@@ -20,9 +52,13 @@
     "azure",
     "iot",
     "iot-central",
+    "iothub",
     "mqtt",
+    "amqp",
     "dps",
-    "provisioning"
+    "provisioning",
+    "telemetry",
+    "device-twin"
   ],
   "license": "MIT",
   "node-red": {
