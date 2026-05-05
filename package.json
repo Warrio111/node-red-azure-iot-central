@@ -1,6 +1,6 @@
 {
   "name": "node-red-azure-iot-central",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Node-RED node for Azure IoT Central — telemetry, commands, and device twin via MQTT/AMQP/HTTP using the official Azure IoT SDK",
   "author": {
     "name": "Robert Benavides",
@@ -13,8 +13,8 @@
       "email": "jortega@nechigroup.com"
     },
     {
-      "name":"William Cepeda",
-      "email": "wcepeda@nechigroup.com"    
+      "name": "William Cepeda",
+      "email": "wcepeda@nechigroup.com"
     },
     {
       "name": "Robert Benavides",
